@@ -98,8 +98,6 @@ increase(pg_stat_database_deadlocks{job="postgresql",datname="postgres"}[5m])
 
 ## Prometheus: пример конфигурации scrape
 
-Добавьте jobs в существующий `scrape_configs` в `/etc/prometheus/prometheus.yml` (не создавайте второй ключ `scrape_configs`).
-
 ```yaml
 scrape_configs:
   - job_name: node_exporter
@@ -123,8 +121,6 @@ sudo promtool check config /etc/prometheus/prometheus.yml
 sudo systemctl restart prometheus
 ```
 
-Проверка: `http://192.168.56.10:9090/targets` — нужные targets должны иметь статус `UP`.
-
 ## Telegram Alerting
 
 Grafana → **Alerting → Notification configuration → Contact points**: Telegram Contact Point `telegram-bank-monitoring` с токеном бота и Chat ID. Notification policy маршрутизирует уведомления в этот Contact Point.
@@ -137,8 +133,6 @@ Grafana → **Alerting → Notification configuration → Contact points**: Tele
 | `BANK - Disk Almost Full` | Root disk usage выше 90% | 2 мин | Требует подтверждения сохранения и теста |
 | `BANK - PostgreSQL Down` | `pg_up` ниже 1 | 1 мин | Не реализовано в текущей версии |
 
-Задержка уведомления зависит от интервала сбора Prometheus, интервала оценки Grafana, Pending period и группировки Notification policy. Не публикуйте Bot Token, пароли и содержимое секретных конфигурационных файлов.
-
 ## Проверка инцидента (выполнена)
 
 На APP-01 в учебном стенде:
@@ -150,38 +144,6 @@ sudo systemctl start prometheus-node-exporter
 # Дождаться up=1 и уведомления Resolved
 ```
 
-Подтверждены получение Firing и Resolved в Telegram; восстановление пришло с задержкой. Тестировать только на собственной лабораторной инфраструктуре.
-
-## Безопасность и ограничения
-
-- Сервисы доступны через VMware Host-only; не открывать порты Exporter в публичный интернет.
-- PostgreSQL слушает `127.0.0.1:5432`.
-- Для PostgreSQL Exporter используется отдельная учётная запись с `pg_monitor`, не суперпользователь.
-- Доступ к `:9187` по возможности ограничивается MON-01.
-- В лаборатории не настроены полноценные TLS, аутентификация экспортёров, HA, резервное копирование и централизованное управление секретами; это не production-ready решение.
-- Node Exporter `up=1` не доказывает доступность приложений. PostgreSQL `pg_up=1` подтверждает подключение Exporter к БД, но не заменяет прикладные health checks.
-
-## Демонстрация проекта
-
-1. Показать три VM и сетевую схему.
-2. Открыть Prometheus Targets и продемонстрировать успешный сбор.
-3. Показать вручную собранный Grafana Infrastructure Dashboard.
-4. Показать PostgreSQL Dashboard и объяснить отличие `up` от `pg_up`.
-5. В тестовой VM остановить Node Exporter и показать Firing в Telegram.
-6. Восстановить службу и показать Resolved.
-
-## Скриншоты для репозитория
-
-Рекомендуется добавить в `docs/screenshots/`: общий дашборд, PostgreSQL Dashboard, Prometheus Targets, правило Alerting, Telegram Firing/Resolved (без секретов и личных данных).
-
-## Дальнейшие улучшения
-
-- PostgreSQL Down Alert и отдельный Exporter Down Alert
-- Nginx + Blackbox Exporter для HTTP health checks
-- Подтверждённые нагрузочные тесты CPU/RAM/Disk alerts
-- Нормализованные легенды и единицы измерения, прогнозирование заполнения диска
-- Безопасное хранение секретов, TLS, разграничение доступа, retention и резервное копирование
-
-## Авторство
+Подтверждены получение Firing и Resolved в Telegram; восстановление пришло с задержкой.
 
 Учебный проект для демонстрации практических навыков мониторинга Linux и PostgreSQL. Развёрнут и настроен вручную.
